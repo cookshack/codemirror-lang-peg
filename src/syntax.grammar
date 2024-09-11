@@ -1,0 +1,76 @@
+@detectDelim
+@precedence {
+  andHigh
+  andLow
+}
+
+//// Templates.
+
+list<x> { (x ',')* x? }
+
+//// Root.
+
+@top G { (Def ~glr)* }
+
+Def { Ident '<-' Expr }
+
+Expr { Seq ("/" Seq)* }
+
+Seq { (~glr Prefix)* }
+
+Prefix {
+  // this alternative follows the PEG, but output would be the same if below was used...
+  !andHigh '&' Action
+  // ...as this produces & Action too.
+  | (!andLow '&' | '!')? primary ('?' | '*' | '+')?
+}
+
+primary {
+  Ident
+  | Group
+  | Literal
+  | Class
+  | '.'
+  | Action
+  | '<'
+  | '>'
+}
+
+Group { '(' Expr ')' }
+
+//// Tokens.
+
+@skip { whitespace | Comment }
+
+@tokens {
+  whitespace { ($[ \t\r\n] | '\r'? '\n')+ }
+
+  Ident { $[a-zA-Z_] $[a-zA-Z_0-9]* }
+  Literal {
+    "'" ('"' | ']' | char)* "'"
+    | '"' ("'" | ']' | char)* '"'
+  }
+  Class { '[' range* ']' }
+  range { rangeChar '-' rangeChar | rangeChar }
+  rangeChar { "\\'" | '\\"' | '"' | "'" | char }
+  char {
+    '\\' $[abefnrtv'"\[\]\\]
+    | '\\' $[0-3]$[0-7]$[0-7]
+    | '\\' $[0-7]$[0-7]?
+    | '\\' '-'
+    | !['"\]\\]
+  }
+
+  Action { '{' ![}]* '}' } // PEG says this but actually can contain nested {}s
+
+  Comment[isolate] { '#' ![\n\r]* }
+
+  // literal tokens
+  '<-' '/' '?' '*' '+' '&' '!' '.' '(' ')' '<' '>'
+
+  @precedence { whitespace }
+}
+
+//// Highlight.
+
+@external propSource highlighting from "./highlight"

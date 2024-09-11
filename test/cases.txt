@@ -1,0 +1,221 @@
+# single
+
+A <- A
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)))))
+
+# multiple idents
+
+A <- A A
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident),
+               Prefix(Ident)))))
+
+# multiple rules
+
+A <- A
+A <- A
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)))),
+  Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)))))
+
+# multiple both
+
+A <- A A
+A <- A
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident),
+               Prefix(Ident)))),
+  Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)))))
+
+# /
+
+A <- A / B
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)),
+           "/",
+           Seq(Prefix(Ident)))))
+
+# / multiple
+
+A <- A / A
+A <- A / A
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)),
+           "/",
+           Seq(Prefix(Ident)))),
+  Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident)),
+               "/",
+               Seq(Prefix(Ident)))))
+
+# literal
+
+A <- "\a" "'" '"' '\n\abc\\\'\70\307' B "\"\'" B '\"\'' B
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Literal),
+               Prefix(Literal),
+               Prefix(Literal),
+               Prefix(Literal),
+               Prefix(Ident),
+               Prefix(Literal),
+               Prefix(Ident),
+               Prefix(Literal),
+               Prefix(Ident)))))
+
+# action
+
+A <- A { printf("HERE\n"); }
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident),
+               Prefix(Action)))))
+
+# action +
+
+A <- { printf("HERE\n"); }+ # what does this mean?
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Action,
+                      "+"))))
+  Comment)
+
+# & action
+
+A <- A &{ printf("HERE\n"); } # repeat is forbidden here
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident),
+               Prefix("&",
+                      Action,
+                      Comment)))))
+
+# ?
+
+A <- A?
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident,
+                      "?")))))
+
+# *
+
+A <- A* '.'
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Ident,
+                      "*"),
+               Prefix(Literal)))))
+
+# +
+
+A <- ':' A+
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Literal),
+               Prefix(Ident,
+                      "+")))))
+
+# &
+
+A <- &X B
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix("&",
+                      Ident),
+               Prefix(Ident)))))
+
+# !
+
+G         <- !"END" EndOfFile
+EndOfFile <- !.
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix("!",
+                      Literal),
+               Prefix(Ident)))),
+  Def(Ident,
+      "<-",
+      Expr(Seq(Prefix("!",
+                      ".")))))
+
+# ( )
+
+# see note on Prefix in syntax
+A <- (&{ f(); } B)
+
+==>
+G(Comment,
+  Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Group("(",
+                            Expr(Seq(Prefix("&",
+                                            Action),
+                                     Prefix(Ident)))))))))
+
+# [ ]
+
+A <- [a-z\\.\'\"'"[]+ B
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Class,
+                      "+"),
+               Prefix(Ident)))))
+
+# < >
+
+Action <- '{' < [^}]* > '}' Spacing
+
+==>
+G(Def(Ident,
+      "<-",
+      Expr(Seq(Prefix(Literal),
+               Prefix("<"),
+               Prefix(Class, "*"),
+               Prefix(">"),
+               Prefix(Literal),
+               Prefix(Ident)))))
