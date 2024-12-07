@@ -4,10 +4,6 @@
   andLow
 }
 
-//// Templates.
-
-list<x> { (x ',')* x? }
-
 //// Root.
 
 @top G { (Def ~glr)* }
