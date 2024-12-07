@@ -22,12 +22,12 @@ function foldAction
 props = [ indentNodeProp.add({ Def: continuedIndent({ units: 1 }),
                                Group: delimitedIndent({ closing: ')' }),
                                Action: flatIndent }), // needs something better
-          foldNodeProp.add({ "Group": foldInside,
+          foldNodeProp.add({ Group: foldInside,
                              Def: foldDef,
                              Action: foldAction }) ]
 
-data = { commentTokens: { line: "#" },
-         closeBrackets: { brackets: "({" } } // skip < because it affects <-
+data = { commentTokens: { line: '#' },
+         closeBrackets: { brackets: '({' } } // skip < because it affects <-
 
 parser = Grammar.parser.configure({ props: props })
 
