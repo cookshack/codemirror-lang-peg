@@ -1,6 +1,6 @@
 {
   "name": "@cookshack/codemirror-lang-peg",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Language support for PEG",
   "homepage": "https://git.sr.ht/~mattmundell/codemirror-lang-peg",
   "scripts": {
